@@ -1,0 +1,33 @@
+{
+  "name": "sf-pe-sns-bridge",
+  "version": "1.0.0",
+  "description": "Salesforce Platform Events To AWS SNS Bridge",
+  "main": "app.js",
+  "scripts": {
+    "start": "node app.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/james-hu/sf-pe-sns-bridge.git"
+  },
+  "keywords": [
+    "salesforce",
+    "platform",
+    "event",
+    "bus",
+    "aws",
+    "sns",
+    "bridge"
+  ],
+  "author": "James Hu",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/james-hu/sf-pe-sns-bridge/issues"
+  },
+  "homepage": "https://github.com/james-hu/sf-pe-sns-bridge#readme",
+  "dependencies": {
+    "aws-sdk": "^2.524.0",
+    "jsforce": "^1.9.2"
+  }
+}
