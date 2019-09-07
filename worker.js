@@ -46,6 +46,7 @@ class Worker {
     buildStatusDTO() {
         return {
             status: this.status,
+            replayId: this.replayId,
             log: this.logMessages,
             recentMessages: this.recentMessages,
         }
@@ -95,7 +96,7 @@ class Worker {
         }).promise()
         .then(result => {
             if(this.debug) {
-                console.log(`[${this.workerId}] Forwarded:\n${JSON.stringify(payload, null, 2)}`);
+                console.log(`[${this.workerId}] Published to SNS:\n${JSON.stringify(payload, null, 2)}`);
             }
             return result.MessageId;
         });
@@ -103,16 +104,28 @@ class Worker {
 
     subscribeCallback(data) {
         if (this.status !== STATUS_STOPPING && this.status != STATUS_STOPPED) {
-            if(this.debug) {
+            if (this.debug) {
                 console.log(`[${this.workerId}] Received:\n${JSON.stringify(data, null, 2)}`);
             }
+            const previousReplayId = this.replayId;
             const newReplayId = data.event.replayId;
             this.logReceivedMessage(newReplayId);
             const payload = data.payload;
             const payloadJson = JSON.stringify(payload);
-            this.publishToSNS(payloadJson);
-            this.replayId = newReplayId;
-            this.storeReplayId();
+            this.publishToSNS(payloadJson).then(() => {
+                if (this.replayId === previousReplayId || this.replayId < newReplayId) {
+                    this.replayId = newReplayId;
+                    this.storeReplayId();
+                } else {
+                    console.log(`replayId not updated because: previous=${previousReplayId}, new=${newReplayId}, current=${this.replayId}`);
+                }
+            })
+            .catch(e => {
+                this.log(`Failed to publish to SNS (replayId=${newReplayId}): ${e}`);
+                if (this.debug) {
+                    console.log(`[${this.workerId}] Failed to publish to SNS (replayId=${newReplayId}): ${e}`);
+                }
+            });
         }
     }
 
