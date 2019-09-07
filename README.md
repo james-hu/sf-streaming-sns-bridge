@@ -21,7 +21,7 @@ The port number can be specified in environment variable `PORT`, or if it is not
 
 Configuration is in JSON format, like this:
 
-```json
+```js
 {
     "options": {
         "replayIdStoreTableName": "your-dynamodb-table-name-for-storing-replay-id-checkpoint",
