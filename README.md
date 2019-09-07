@@ -93,3 +93,14 @@ Value in `replayIdStoreDelay` is a number representing the number of millisecond
 in DynamoDB should be updated peridically.
 
 If `replayIdStoreTableName` is `null` then checkpointing won't happen.
+
+## Run it locally
+
+To run it locally for demo purpose, you need to:
+
+```bash
+npm ci
+export AWS_REGION=...
+export BRIDGE_CONFIG=...
+npm start
+```
