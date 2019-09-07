@@ -113,6 +113,9 @@ class Worker {
             const payload = data.payload;
             const payloadJson = JSON.stringify(payload);
             this.publishToSNS(payloadJson).then(() => {
+                if(this.debug) {
+                    console.log(`[${this.workerId}] Published to SNS (replayId=${newReplayId}):\n${JSON.stringify(payload, null, 2)}`);
+                }
                 if (this.replayId === previousReplayId || this.replayId < newReplayId) {
                     this.replayId = newReplayId;
                     this.storeReplayId();

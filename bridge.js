@@ -1,5 +1,4 @@
 const AWS = require('aws-sdk');
-const jsforce = require('jsforce');
 const Worker = require('./worker').Worker;
 
 class Bridge {
@@ -70,12 +69,12 @@ class Bridge {
 
     startAll() {
         return this.doAll((key, worker) => 
-            worker.start().catch(e => console.log(`Failed to start ${key}: ${e}`)));
+            worker.start().catch(e => console.log(`[${key}] Failed to start: ${e}`)));
     }
 
     stopAll() {
         return this.doAll((key, worker) => 
-            worker.stop().catch(e => console.log(`Failed to start ${key}: ${e}`)));
+            worker.stop().catch(e => console.log(`[${key}] Failed to stop: ${e}`)));
     }
 
     doAll(func) {
