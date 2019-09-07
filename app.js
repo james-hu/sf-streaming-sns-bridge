@@ -4,7 +4,6 @@ const http = require('http');
 const Bridge = require('./bridge').Bridge;
 
 const PORT = process.env.BRIDGE_PORT || process.env.PORT || 8080;
-const RELOAD_INTERVAL = process.env.BRIDGE_RELOAD_INTERVAL || 30; // minutes
 
 let serverStatus = 'DOWN';
 
@@ -17,19 +16,21 @@ http.createServer(function (req, res) {
 
     if (url.startsWith('/health')) {
         bodyPromise = Promise.resolve({status: serverStatus});
-    } else if (url.startsWith('/status')) { // status for channels
-        bodyPromise = bridge.status();
-    } else if (url.startsWith('/reload')) { // reload configurations
+    } else if (url.startsWith('/status')) { // status for all channels
+        bodyPromise = Promise.resolve(bridge.status());
+    } else if (url.startsWith('/reload')) { // reload configurations and restart the bridge
         bodyPromise = bridge.reload().then(() => ({succeeded: true}));
+    } else {
+        bodyPromise = Promise.resolve({statusCode: 404});
     }
 
     bodyPromise.catch(e => {
-        console.log('Error', e);
+        console.log(`${url}: `, e);
         return {error: `${e}`};
     })
     .then(body => {
-        res.writeHead(bodyPromise.error? 500 : 200, {'Content-Type': 'application/json'});
-        res.write(JSON.stringify(bodyPromise));
+        res.writeHead(body.statusCode? body.statusCode : (body.error? 500 : 200), {'Content-Type': 'application/json'});
+        res.write(JSON.stringify(body));
         res.end();
     });
 }).listen(PORT);
@@ -37,11 +38,6 @@ console.log(`Listening on ${PORT}`);
 serverStatus = 'UP';
 
 // Start the bridge
-bridge.loadConfig()
-.then(() => bridge.startAll())
-.catch(e => {
-    console.log(`Failed to start: ${e}`);
+bridge.reload().catch(e => {
+    console.log(`Failed to start the bridge: ${e}`);
 })
-.then(() => {
-    setInterval(bridge.reload.bind(bridge), RELOAD_INTERVAL * 60000);
-});

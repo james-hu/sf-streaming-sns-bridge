@@ -1,7 +1,7 @@
 {
-  "name": "sf-pe-sns-bridge",
+  "name": "sf-streaming-sns-bridge",
   "version": "1.0.0",
-  "description": "Salesforce Platform Events To AWS SNS Bridge",
+  "description": "Salesforce Streaming Events To AWS SNS Bridge",
   "main": "app.js",
   "scripts": {
     "start": "node app.js",

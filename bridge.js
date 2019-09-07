@@ -1,15 +1,15 @@
 const AWS = require('aws-sdk');
 const jsforce = require('jsforce');
+const Worker = require('./worker').Worker;
 
 class Bridge {
     constructor() {
-        this.configPromise = null; // {[envName1]: {...connParams1, channels: {channelNameA: arnA, channelNameB: arnB, ... }}, ... }
-        this.status = {};   // channelKey: {status, replayId}
-        this.subscriptions = {}; // channelKey: {client, subscription}
+        this.workers = {};
     }
 
     status() {
-        return Promise.resolve({});
+        return Object.entries(this.workers).reduce((result, [key, worker]) => 
+            result[key] = worker.buildStatusDTO(), {});
     }
 
     loadConfig() {
@@ -25,7 +25,7 @@ class Bridge {
                         this.config = r.Parameter.Value
                     })
                     .catch(err => {
-                        throw new Error(`Failed to get parameter '${parameterName}' in '${this.ssm.config.region}': ${err}`);
+                        throw new Error(`Failed to get parameter '${parameterName}' from AWS in '${this.ssm.config.region}': ${err}`);
                     });
             } else {
                 throw new Error(`No configuration can be found in environment variable either 'BRIDGE_CONFIG' or 'BRIDGE_CONFIG_PARAMETER_STORE'`);
@@ -33,49 +33,56 @@ class Bridge {
         } else {
             configStringPromise = Promise.resolve(configString);
         }
-        const p = configStringPromise.then(config => {
+        return configStringPromise.then(config => {
+            let obj;
             try {
-                return JSON.parse(config);
+                obj = JSON.parse(config);
             } catch (err) {
                 throw new Error(`Failed to parse JSON configuration (${err}): ${config}`)
             };
+            return obj;
         });
-        this.configPromise = p;
-        return p;
     }
 
     reload() {
+        this.stopAll();
+        this.workers = [];
         return this.loadConfig()
-            .then(() => this.stopAll())
-            .then(() => this.startAll());
+            .then(config => {
+                const newWorkers = {};
+                const options = config.options;
+                for (let [envName, envDetails] of Object.entries(config).filter(([key, value]) => key !== 'options')) {
+                    const sfConnOptions = envDetails.connection;
+                    envDetails.channels.forEach(mappingConfig => {
+                        const channelKey = `${envName}//${mappingConfig.channelName}`;
+                        newWorkers[channelKey] = new Worker(channelKey, sfConnOptions, mappingConfig, options);
+                    });
+                }
+                console.log(`Loaded from configuration: `, Object.keys(newWorkers));
+                return newWorkers;
+            })
+            .then(newWorkers => this.stopAll().then(() => newWorkers))
+            .then(newWorkers => {
+                this.workers = newWorkers;
+                return this.startAll();
+            });
     }
 
     startAll() {
-        return this.configPromise.then(config => {
-            for (let [envName, envDetails] of Object.entries(config)) {
-                const conn = new jsforce.Connection(envDetails);
-                for (let [channelName, arn] of Object.entries(envDetails.channels)) {
-                    const channelKey = `${envName}/${channelName}`;
-                    this.status[channelKey] = {status: 'Connecting', replayId: null};
-                    // read replayId from DynamoDB
-                    const replayId = 3;
-                    const replayExt = new jsforce.StreamingExtension.Replay(channelName, replayId);
-
-                    const client = conn.streaming.createClient([ replayExt ]);
-
-                    const subscription = client.subscribe(channel, data => {
-                        // send to AWS
-                        // update DynamoDB
-                    });
-                    this.status[channelKey].status = 'Subscribed';
-                    this.subscriptions[channelKey] = {client, subscription};
-                }
-            }
-        });
+        return this.doAll((key, worker) => 
+            worker.start().catch(e => console.log(`Failed to start ${key}: ${e}`)));
     }
 
     stopAll() {
-        return Promise.resolve({});
+        return this.doAll((key, worker) => 
+            worker.stop().catch(e => console.log(`Failed to start ${key}: ${e}`)));
+    }
+
+    doAll(func) {
+        return Promise.all(Object.entries(this.workers).map(entry => {
+            const [key, worker] = entry;
+            return func(key, worker);
+        }));
     }
 }
 
