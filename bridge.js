@@ -7,8 +7,11 @@ class Bridge {
     }
 
     status() {
-        return Object.entries(this.workers).reduce((result, [key, worker]) => 
-            result[key] = worker.buildStatusDTO(), {});
+        return Object.entries(this.workers).reduce((result, entry) => {
+            const [key, worker] = entry;
+            result[key] = worker.buildStatusDTO();
+            return result;
+        }, {});
     }
 
     loadConfig() {
