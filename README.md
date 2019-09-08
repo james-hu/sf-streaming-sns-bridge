@@ -27,6 +27,7 @@ Configuration is in JSON format, like this:
         "replayIdStoreTableName": "your-dynamodb-table-name-for-storing-replay-id-checkpoint",
         "replayIdStoreKeyName": "channel",  // if not set, default to "channel"
         "replayIdStoreDelay": 2000,         // if not set, default to 2000
+        "initialReplayId": -1               // if not set, default to -1
         "debug": false                      // enable debug to see events logged to console
     },
     "test1": {
