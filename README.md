@@ -15,6 +15,7 @@ Main features are:
   * AWS Systems Manager Parameter Store
 * Checkpoints can be stored in AWS DynamoDB to avoid missing events during restarts.
 * Reconnect and retry logic built-in.
+* REST API endpoints for managing and monitoring.
 * Optimized for AWS Elastic Beanstalk but can also be executed in any Node.js environment as a console application.
 
 ## Configuration
