@@ -36,13 +36,23 @@ The JSON text has this structure:
 ```js
 {
     "options": {
-        "replayIdStoreTableName": "your-dynamodb-table-name-for-storing-replay-id-checkpoint", // Name of the DynamoDB table used for storing Replay ID checkpoints. It must exist in the default AWS region as the bridge is running in. If not set, checkpointing would be disabled.
-        "replayIdStoreKeyName": "channel",  // Name of the partition key in the DynamoDb table. If not set then default to "channel"
-        "replayIdStoreDelay": 2000,         // The maximum delay (as number of milliseconds) before the newly received Replay ID would be saved into the DynamoDB table. If not set then default to 2000.
-        "initialReplayId": -1               // The starting Replay ID to use in case there is no previously saved checkpoint in the DynamoDB table. If not set then default to -1.
-        "debug": false                      // If it is true, then messages received and forwarded would be logged to console.
+        "replayIdStoreTableName": "dynamodb-table-name", // Name of the DynamoDB table used for storing
+                                                            // Replay ID checkpoints. It must exist in the
+                                                            // default AWS region as the bridge is running in.
+                                                            // If not set, checkpointing would be disabled.
+        "replayIdStoreKeyName": "channel",  // Name of the partition key in the DynamoDb table.
+                                               // If not set then default to "channel"
+        "replayIdStoreDelay": 2000,         // The maximum delay (as number of milliseconds) before the
+                                               // newly received Replay ID would be saved into the DynamoDB
+                                               // table. If not set then default to 2000.
+        "initialReplayId": -1               // The starting Replay ID to use in case there is no previously
+                                               // saved checkpoint in the DynamoDB table. If not set then
+                                               // default to -1.
+        "debug": false                      // If it is true, then messages received and forwarded would
+                                               // be logged to console.
     },
-    "test1": {  // The name of the Salesforce environment/sandbox, can be any text you like, but please avoid having '//' in it.
+    "test1": {  // The name of the Salesforce environment/sandbox,
+                   // can be any text you like, but please avoid having '//' in it.
         "connection": {     // Salesforce connection parameters
             "clientId": "of-the-connected-app",
             "clientSecret": "of-the-connected-app",
@@ -52,7 +62,7 @@ The JSON text has this structure:
             "password": "password of the user",
             "token": "secure-token-of-the-user"
         },
-        "channels": [   // Can have multiple channels configured here
+        "channels": [       // Can have multiple channels configured here
             {
                 "channelName": "/event/the-name-in-Salesforce__e",
                 "snsTopicArn": "your-AWS-SNS-topic-ARN"
@@ -73,7 +83,7 @@ The JSON text has this structure:
             "password": "password of the user",
             "token": "secure-token-of-the-user"
         },
-        "channels": [   // Can have multiple channels configured here
+        "channels": [       // Can have multiple channels configured here
             {
                 "channelName": "/event/the-name-in-Salesforce__e",
                 "snsTopicArn": "your-AWS-SNS-topic-ARN"
