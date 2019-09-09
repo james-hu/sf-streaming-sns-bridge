@@ -133,4 +133,4 @@ After starting up, you can access the bridge's REST API endpoints to manage it:
 
 * `/health` - returns whether the bridge is `UP` or `DOWN`
 * `/status` - returns the detailed status of each channel-SNS pair
-* `/reload` - instruct the bridge the re-read configurations and then restart all channel-SNS pairs
+* `/reload` - instruct the bridge to re-read configurations and then restart all channel-SNS pairs
