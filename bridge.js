@@ -47,8 +47,6 @@ class Bridge {
     }
 
     reload() {
-        this.stopAll();
-        this.workers = [];
         return this.loadConfig()
             .then(config => {
                 const newWorkers = {};
