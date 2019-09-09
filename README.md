@@ -3,99 +3,109 @@
 Node.js application (AWS Elastic Beanstalk friendly) for
 bridging Salesforce Streaming Events to AWS SNS topics.
 
-This application listens on Salesforce Streaming Events and forward all
+This application listens on Salesforce Streaming Events and forwards all
 messages to AWS SNS topics.
 
-* Having multiple Salesforce logins each with multiple channels is supported.
+Main features are:
+
+* You can configure multiple Salesforce logins each with multiple channels.
 * Each channel can be configured to have messages forwarded to an AWS SNS topic.
-  (If forwarding to more than one SNS topics is needed, you can configure multiple entries with the same channel)
-* Configurations can be read from AWS Systems Manager Parameter Store, or an environment variable.
-* Checkpoints can be stored in AWS DynamoDB to avoid missing event during restarts.
+* Configurations can be put in one of these sources:
+  * Environment variable
+  * AWS Systems Manager Parameter Store
+* Checkpoints can be stored in AWS DynamoDB to avoid missing events during restarts.
 * Reconnect and retry logic built-in.
 * Optimized for AWS Elastic Beanstalk but can also be executed in any Node.js environment as a console application.
 
 ## Configuration
 
 When starting, the application listens on a port to provide REST API for management purpose.
-The port number can be specified in environment variable `PORT`, or if it is not set, port `8080` would be used.
+The port number can be specified in environment variable `BRIDGE_PORT` or `PORT`,
+or if none of them is set port `8080` would be used.
 
-Configuration is in JSON format, like this:
+All other configurations are structured as a JSON text, stored in one of these places:
+
+* Environment variable `BRIDGE_CONFIG`
+* AWS Systems Manager Parameter Store, the name of the parameter is read from environment variable `BRIDGE_CONFIG_PARAMETER_STORE`
+
+New lines and spaces in the JSON text are not necessary, especially when the configuration
+is put in the environment variable.
+
+The JSON text has this structure:
 
 ```js
 {
     "options": {
-        "replayIdStoreTableName": "your-dynamodb-table-name-for-storing-replay-id-checkpoint",
-        "replayIdStoreKeyName": "channel",  // if not set, default to "channel"
-        "replayIdStoreDelay": 2000,         // if not set, default to 2000
-        "initialReplayId": -1               // if not set, default to -1
-        "debug": false                      // enable debug to see events logged to console
+        "replayIdStoreTableName": "your-dynamodb-table-name-for-storing-replay-id-checkpoint", // Name of the DynamoDB table used for storing Replay ID checkpoints. It must exist in the default AWS region as the bridge is running in. If not set, checkpointing would be disabled.
+        "replayIdStoreKeyName": "channel",  // Name of the partition key in the DynamoDb table. If not set then default to "channel"
+        "replayIdStoreDelay": 2000,         // The maximum delay (as number of milliseconds) before the newly received Replay ID would be saved into the DynamoDB table. If not set then default to 2000.
+        "initialReplayId": -1               // The starting Replay ID to use in case there is no previously saved checkpoint in the DynamoDB table. If not set then default to -1.
+        "debug": false                      // If it is true, then messages received and forwarded would be logged to console.
     },
-    "test1": {
-        "connection": {
-            "clientId": "",
-            "clientSecret": "",
+    "test1": {  // The name of the Salesforce environment/sandbox, can be any text you like, but please avoid having '//' in it.
+        "connection": {     // Salesforce connection parameters
+            "clientId": "of-the-connected-app",
+            "clientSecret": "of-the-connected-app",
             "loginUrl": "https://test.salesforce.com",
             "redirectUri": "https://login.salesforce.com",
-            "username": "",
-            "password": "",
-            "token": ""             // secure token of the user
+            "username": "user-name",
+            "password": "password of the user",
+            "token": "secure-token-of-the-user"
         },
-        "channels": [
+        "channels": [   // Can have multiple channels configured here
             {
                 "channelName": "/event/the-name-in-Salesforce__e",
                 "snsTopicArn": "your-AWS-SNS-topic-ARN"
             },
             {
-                "channelName": "",
-                "snsTopicArn": ""
+                "channelName": "/event/another-name-in-Salesforce__e",
+                "snsTopicArn": "your-AWS-SNS-topic-ARN"
             }
         ]
     },
-    "test2": {
-        "connection": {
-            "clientId": "",
-            "clientSecret": "",
+    "test2": {  // Can have multiple Salesforce environment/sandbox
+        "connection": {     // Salesforce connection parameters
+            "clientId": "of-the-connected-app",
+            "clientSecret": "of-the-connected-app",
             "loginUrl": "https://test.salesforce.com",
             "redirectUri": "https://login.salesforce.com",
-            "username": "",
-            "password": "",
-            "token": ""             // secure token of the user
+            "username": "user-name",
+            "password": "password of the user",
+            "token": "secure-token-of-the-user"
         },
-        "channels": [
+        "channels": [   // Can have multiple channels configured here
             {
-                "channelName": "",
-                "snsTopicArn": ""
+                "channelName": "/event/the-name-in-Salesforce__e",
+                "snsTopicArn": "your-AWS-SNS-topic-ARN"
             },
             {
-                "channelName": "",
-                "snsTopicArn": ""
-            },
-            {
-                "channelName": "",
-                "snsTopicArn": ""
+                "channelName": "/event/another-name-in-Salesforce__e",
+                "snsTopicArn": "your-AWS-SNS-topic-ARN"
             }
         ]
     }
 }
 ```
 
-Configuration can be provided in these ways:
-
-* As a long string in environment variable `BRIDGE_CONFIG`.
-* As a string in AWS Systems Manager Parameter Store.
-  Name of the parameter must be provided through environment variable `BRIDGE_CONFIG_PARAMETER_STORE`.
-
 ## Checkpoint
 
-Optionally, you can provide a DynamoDB table for keeping checkpoints of Replay IDs.
-If you do, the table name should be put in the `options` -> `replayIdStoreTableName` entry in the configuration.
-Checkpoint interval can be put in the `options` -> `replayIdStoreDelay` entry in the configuration.
-Value in `replayIdStoreDelay` is a number representing the number of milliseconds that the Replay ID
-in DynamoDB should be updated peridically.
+For production usage, checkpointing is needed. That means, the bridge would periodically
+save the Replay ID of the last forwarded message into the DynamoDB table specified by
+the configuration entry `replayIdStoreTableName`. And when the bridge starts or reloads,
+it would read the saved Replay ID from DynamoDB table and tries to catch up from there.
 
-If `replayIdStoreTableName` is `null` then checkpointing won't happen.
+If `replayIdStoreTableName` is not configured, checkpointing is disabled.
+If both `replayIdStoreTableName` and `initialReplayId` are not configured,
+the bridge would not try to catch up, it would receive only new messages.
 
-## Run it locally
+`replayIdStoreDelay` Controls how frequently checkpointing happens.
+The actual DynamoDB write frequency is always no more than the frequency that messages arrive.
+That means, if there is only one message every hour, setting `replayIdStoreDelay` to
+1 millisecond won't result in 1000 writes per second, the actual write frequency would
+still be once per hour. However, if the message comes at a frequency of 1/second, setting
+`replayIdStoreDelay` to 60000 milliseconds would result in roughly 1 DynamoDB write per minute.
+
+## How to run it
 
 To run it locally for demo purpose, you need to:
 
@@ -105,3 +115,11 @@ export AWS_REGION=...
 export BRIDGE_CONFIG=...
 npm start
 ```
+
+## REST API
+
+After starting up, you can access the bridge's REST API endpoints to manage it:
+
+* `/health` - returns whether the bridge is `UP` or `DOWN`
+* `/status` - returns the detailed status of each channel-SNS pair
+* `/reload` - instruct the bridge the re-read configurations and then restart all channel-SNS pairs
