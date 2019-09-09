@@ -130,12 +130,7 @@ class Worker {
             Message: payload,
             TopicArn: this.snsTopicArn,
         }).promise()
-        .then(result => {
-            if(this.debug) {
-                console.log(`[${this.workerId}] Published to SNS:\n${JSON.stringify(payload, null, 2)}`);
-            }
-            return result.MessageId;
-        });
+        .then(result => result.MessageId);
     }
 
     subscribeCallback(data) {
