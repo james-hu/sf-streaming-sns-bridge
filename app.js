@@ -38,6 +38,4 @@ console.log(`Listening on ${PORT}`);
 serverStatus = 'UP';
 
 // Start the bridge
-bridge.reload().catch(e => {
-    console.log(`Failed to start the bridge: ${e}`);
-})
+bridge.reload();
