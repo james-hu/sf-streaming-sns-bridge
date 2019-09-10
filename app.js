@@ -1,5 +1,6 @@
 "use strict";
 
+const log = require('lambda-log');
 const http = require('http');
 const Bridge = require('./bridge').Bridge;
 
@@ -25,8 +26,17 @@ http.createServer(function (req, res) {
     }
 
     bodyPromise.catch(e => {
-        console.log(`${url}: `, e);
-        return {error: `${e}`};
+        let body;
+        if (e.statusCode) {
+            body = e;
+        } else {
+            body = {error: `${e}`};
+        }
+
+        if (!e.statusCode || e.statusCode !== 404) {
+            log.error(e, {description: `Failed to handle request '${url}'`});
+        }
+        return body;
     })
     .then(body => {
         res.writeHead(body.statusCode? body.statusCode : (body.error? 500 : 200), {'Content-Type': 'application/json'});
@@ -34,7 +44,7 @@ http.createServer(function (req, res) {
         res.end();
     });
 }).listen(PORT);
-console.log(`Listening on ${PORT}`);
+log.info(`Listening on ${PORT}`);
 serverStatus = 'UP';
 
 // Start the bridge

@@ -1,3 +1,4 @@
+const log = require('lambda-log');
 const AWS = require('aws-sdk');
 const jsforce = require('jsforce');
 
@@ -135,29 +136,30 @@ class Worker {
 
     subscribeCallback(data) {
         if (this.status !== STATUS_STOPPING && this.status != STATUS_STOPPED) {
+            const newReplayId = data.event.replayId;
+            const logMeta = {worker: this.workerId, replayId: newReplayId};
             if (this.debug) {
-                console.log(`[${this.workerId}] Received:\n${JSON.stringify(data, null, 2)}`);
+                log.debug(`[${this.workerId}] Received message`, {...logMeta, data});
             }
             const previousReplayId = this.replayId;
-            const newReplayId = data.event.replayId;
             this.logReceivedMessage(newReplayId);
             const payload = data.payload;
             const payloadJson = JSON.stringify(payload);
             this.publishToSNS(payloadJson).then(() => {
                 if(this.debug) {
-                    console.log(`[${this.workerId}] Published to SNS (replayId=${newReplayId}):\n${JSON.stringify(payload, null, 2)}`);
+                    log.debug(`[${this.workerId}] Published to SNS (replayId=${newReplayId})`, {...logMeta, payload});
                 }
                 if (this.replayId === previousReplayId || this.replayId < newReplayId) {
                     this.replayId = newReplayId;
                     this.storeReplayId();
                 } else {
-                    console.log(`replayId not updated because: previous=${previousReplayId}, new=${newReplayId}, current=${this.replayId}`);
+                    log.debug(`replayId not updated because: previous=${previousReplayId}, new=${newReplayId}, current=${this.replayId}`, {...logMeta});
                 }
             })
             .catch(e => {
                 this.log(`Failed to publish to SNS (replayId=${newReplayId}): ${e}`);
                 if (this.debug) {
-                    console.log(`[${this.workerId}] Failed to publish to SNS (replayId=${newReplayId}): ${e}`);
+                    log.debug(`[${this.workerId}] Failed to publish to SNS (replayId=${newReplayId})`, {...logMeta, error: e});
                 }
             });
         }
@@ -169,7 +171,7 @@ class Worker {
     }
 
     start() {
-        console.log(`Starting: ${this.workerId}`);
+        log.info(`Starting: ${this.workerId}`);
         this.status = STATUS_STARTING;
         this.log('Fetching initial replayId');
         return this.fetchReplayId().then(replayId => {

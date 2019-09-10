@@ -1,3 +1,4 @@
+const log = require('lambda-log');
 const AWS = require('aws-sdk');
 const Worker = require('./worker').Worker;
 
@@ -51,6 +52,7 @@ class Bridge {
             .then(config => {
                 const newWorkers = {};
                 const options = config.options;
+                log.options.debug = options && options.debug;
                 for (let [envName, envDetails] of Object.entries(config).filter(([key, value]) => key !== 'options')) {
                     const sfConnOptions = envDetails.connection;
                     envDetails.channels.forEach(mappingConfig => {
@@ -58,7 +60,7 @@ class Bridge {
                         newWorkers[channelKey] = new Worker(channelKey, sfConnOptions, mappingConfig, options);
                     });
                 }
-                console.log(`Loaded from configuration: `, Object.keys(newWorkers));
+                log.info(`Loaded configuration`, {channels: Object.keys(newWorkers)});
                 return newWorkers;
             })
             .then(newWorkers => this.stopAll().then(() => newWorkers))
@@ -70,12 +72,12 @@ class Bridge {
 
     startAll() {
         return this.doAll((key, worker) => 
-            worker.start().catch(e => console.log(`[${key}] Failed to start: ${e}`)));
+            worker.start().catch(e => log.error(e, {description: `[${key}] Failed to start`})));
     }
 
     stopAll() {
         return this.doAll((key, worker) => 
-            worker.stop().catch(e => console.log(`[${key}] Failed to stop: ${e}`)));
+            worker.stop().catch(e => log.error(e, {description: `[${key}] Failed to stop`})));
     }
 
     doAll(func) {
