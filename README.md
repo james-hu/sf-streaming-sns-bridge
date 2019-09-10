@@ -8,8 +8,12 @@ messages to AWS SNS topics.
 
 Main features are:
 
-* You can configure multiple Salesforce logins each with multiple channels.
-* Each channel can be configured to have messages forwarded to an AWS SNS topic.
+* All [kinds of events](https://developer.salesforce.com/docs/atlas.en-us.api_streaming.meta/api_streaming/terms.htm)
+  are supported: PushTopics, Platform Events, and Change Data Capture Events.
+* You can configure multiple Salesforce logins each with multiple
+  [channels](https://developer.salesforce.com/docs/atlas.en-us.api_streaming.meta/api_streaming/terms.htm).
+* Each channel can be configured to have messages forwarded to an
+  [AWS SNS topic](https://docs.aws.amazon.com/sns/latest/dg/welcome.html).
 * Configurations can be put in one of these sources:
   * Environment variable
   * AWS Systems Manager Parameter Store
