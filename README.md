@@ -1,9 +1,9 @@
-# sf-streaming-sns-bridge: Salesforce Streaming Events SNS Bridge
+# Bridge for forwarding Salesforce Streaming Events to AWS SNS topics
 
-Node.js application (AWS Elastic Beanstalk friendly) for
+Node.js application (Docker and AWS ECS/EB ready) for
 bridging Salesforce Streaming Events to AWS SNS topics.
 
-This application listens on Salesforce Streaming Events and forwards all
+This application listens for Salesforce Streaming Events and forwards all
 messages to AWS SNS topics.
 
 Main features are:
@@ -20,7 +20,8 @@ Main features are:
 * Checkpoints can be stored in AWS DynamoDB to avoid missing events during restarts.
 * Reconnect and retry logic built-in.
 * REST API endpoints for managing and monitoring.
-* Optimized for AWS Elastic Beanstalk but can also be executed in any Node.js environment as a console application.
+* Docker image [available on DockerHub](https://hub.docker.com/r/jameshu/sf-streaming-sns-bridge).
+* Optimized for AWS Elastic Beanstalk and ECS but can also be executed in any Node.js environment as a console application.
 
 ## Configuration
 
@@ -130,6 +131,9 @@ export AWS_REGION=...
 export BRIDGE_CONFIG=...
 npm start
 ```
+
+Or, you can get the pre-built Docker image from Docker Hub:
+[jameshu/sf-streaming-sns-bridge](https://hub.docker.com/r/jameshu/sf-streaming-sns-bridge)
 
 ## REST API
 
