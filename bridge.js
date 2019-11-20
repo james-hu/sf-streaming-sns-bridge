@@ -22,11 +22,9 @@ class Bridge {
             const parameterName = process.env.BRIDGE_CONFIG_PARAMETER_STORE;
             if (parameterName != null) {
                 configStringPromise = new AWS.SSM()
-                    .getParameter({Name: parameterEntry})
+                    .getParameter({Name: parameterName, WithDecryption: true})
                     .promise()
-                    .then(r => {
-                        this.config = r.Parameter.Value
-                    })
+                    .then(r => r.Parameter.Value)
                     .catch(err => {
                         throw new Error(`Failed to get parameter '${parameterName}' from AWS in '${this.ssm.config.region}': ${err}`);
                     });
