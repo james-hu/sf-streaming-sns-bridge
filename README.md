@@ -123,7 +123,7 @@ still be once per hour. However, if the message comes at a frequency of 1/second
 
 ## How to run it
 
-To run it locally for demo purpose, you need to:
+To run it locally for demo purpose, you can do this:
 
 ```bash
 npm ci
@@ -132,7 +132,13 @@ export BRIDGE_CONFIG=...
 npm start
 ```
 
-Or, you can get the pre-built Docker image from Docker Hub:
+or this:
+
+```bash
+AWS_REGION=ap-southeast-2 BRIDGE_CONFIG_PARAMETER_STORE=/your/aws/param/store/name npm start
+```
+
+Or, you can get the pre-built Docker image from Docker Hub and use docker to run it:
 [jameshu/sf-streaming-sns-bridge](https://hub.docker.com/r/jameshu/sf-streaming-sns-bridge)
 
 ## REST API
