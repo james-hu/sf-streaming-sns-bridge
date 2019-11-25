@@ -26,7 +26,7 @@ class Bridge {
                     .promise()
                     .then(r => r.Parameter.Value)
                     .catch(err => {
-                        throw new Error(`Failed to get parameter '${parameterName}' from AWS in '${this.ssm.config.region}': ${err}`);
+                        throw new Error(`Failed to get parameter '${parameterName}' from AWS: ${err}`);
                     });
             } else {
                 throw new Error(`No configuration can be found in environment variable either 'BRIDGE_CONFIG' or 'BRIDGE_CONFIG_PARAMETER_STORE'`);
