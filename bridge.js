@@ -56,7 +56,7 @@ class Bridge {
                 const v = process.env[fullEnvName];
                 if (v) {
                     obj.options[name] = v;
-                    log.info(`Option '${name}' overridden by value read from environment variable '${fullEnvName}': ${v}`);
+                    log.info(`Configuration 'options.${name}' overridden by value read from environment variable '${fullEnvName}': ${v}`);
                 }
             });
             return obj;
