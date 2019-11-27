@@ -103,6 +103,14 @@ The JSON text has this structure:
 }
 ```
 
+Some configuration items can be overridden by environment variables:
+
+* `BRIDGE_CONFIG_REPLAY_ID_STORE_TABLE_NAME`
+* `BRIDGE_CONFIG_REPLAY_ID_STORE_KEY_NAME`
+* `BRIDGE_CONFIG_REPLAY_ID_STORE_DELAY`
+* `BRIDGE_CONFIG_INITIAL_REPLAY_ID`
+* `BRIDGE_CONFIG_DEBUG`
+
 ## Checkpoint
 
 For production usage, checkpointing is needed. That means, the bridge would periodically

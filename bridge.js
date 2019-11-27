@@ -41,6 +41,24 @@ class Bridge {
             } catch (err) {
                 throw new Error(`Failed to parse JSON configuration (${err}): ${config}`)
             };
+            if (obj.options == null) {
+                obj.options = {};
+            }
+
+            [
+                ['replayIdStoreTableName', 'REPLAY_ID_STORE_TABLE_NAME'],
+                ['replayIdStoreKeyName', 'REPLAY_ID_STORE_KEY_NAME'],
+                ['replayIdStoreDelay', 'REPLAY_ID_STORE_DELAY'],
+                ['initialReplayId', 'INITIAL_REPLAY_ID'],
+                ['debug', 'DEBUG']
+            ].forEach(([name, envName]) => {
+                const fullEnvName = 'BRIDGE_CONFIG_' + envName
+                const v = process.env[fullEnvName];
+                if (v) {
+                    obj.options[name] = v;
+                    log.info(`Option '${name}' overridded by value read from environment variable '${fullEnvName}': ${v}`);
+                }
+            });
             return obj;
         });
     }
