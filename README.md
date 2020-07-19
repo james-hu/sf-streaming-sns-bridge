@@ -129,6 +129,23 @@ That means, if there is only one message every hour, setting `replayIdStoreDelay
 still be once per hour. However, if the message comes at a frequency of 1/second, setting
 `replayIdStoreDelay` to 60000 milliseconds would result in roughly 1 DynamoDB write per minute.
 
+## Manually modifying the checkpoint
+
+Sometimes you may want to manually modify the Replay ID checkpoint. For example
+you may want to rewind or fast forward to a specific Replay ID.
+
+In such case, if you don't want to stop the whole bridge, you need to follow these steps:
+
+1. Remove the channel from the configuration
+2. Do a `/reload` so that you will be able to persist your desired checkpoint configuration
+2. Delete or modify the checkpoint information in the DynamoDB table
+3. Add the channel back in the configuration
+4. Do a `/reload` again so that the channel will start again with your new checkpoint configuration
+
+You can't just modify the checkpoint in DynamoDB table and then do a `/reload` because
+current checkpoint in memory would be updated into the DynamoDB table during `/reload` thus
+would override your modification.
+
 ## How to run it
 
 To run it locally for demo purpose, you can do this:
