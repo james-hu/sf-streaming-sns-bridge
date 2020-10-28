@@ -1,6 +1,8 @@
 "use strict";
 
 const log = require('lambda-log');
+log.info(`Starting sf-streaming-sns-bridge v${process.env.npm_package_version}`);
+
 const http = require('http');
 const Bridge = require('./bridge').Bridge;
 
@@ -44,7 +46,7 @@ http.createServer(function (req, res) {
         res.end();
     });
 }).listen(PORT);
-log.info(`[sf-streaming-sns-bridge v1.2.0] Listening on ${PORT}`);
+log.info(`Listening on ${PORT}`);
 serverStatus = 'UP';
 
 // Start the bridge
