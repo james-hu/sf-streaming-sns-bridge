@@ -44,7 +44,7 @@ http.createServer(function (req, res) {
         res.end();
     });
 }).listen(PORT);
-log.info(`Listening on ${PORT}`);
+log.info(`[sf-streaming-sns-bridge v1.2.0] Listening on ${PORT}`);
 serverStatus = 'UP';
 
 // Start the bridge
