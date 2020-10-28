@@ -197,13 +197,16 @@ class Worker {
     }
 
     stop() {
+        log.info(`Stopping: ${this.workerId}`);
         this.status = STATUS_STOPPING;
         if (this.subscription != null) {
             this.log('Cancelling subscription');
+            log.info(`Cancelling subscription: ${this.workerId}`);
             this.subscription.cancel();
-            this.status = STATUS_STOPPED;
             this.log('Cancelled subscription');
         }
+        this.status = STATUS_STOPPED;
+        log.info(`Stopped: ${this.workerId}`);
         this.subscription = null;
         this.streamingClient = null;
         this.connection = null;
