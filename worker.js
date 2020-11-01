@@ -199,15 +199,26 @@ class Worker {
     stop() {
         log.info(`Stopping: ${this.workerId}`);
         this.status = STATUS_STOPPING;
-        if (this.subscription != null) {
+        for (let i = 0; i < 5 && this.subscription != null; i ++) {
             this.log('Cancelling subscription');
             log.info(`Cancelling subscription: ${this.workerId}`);
-            this.subscription.cancel();
-            this.log('Cancelled subscription');
+            try {
+                this.subscription.cancel();
+                this.log('Cancelled subscription');
+                this.subscription = null;
+            } catch (err) {
+                this.log('Failed to cancel subscription');
+                log.warn(`Failed to cancel subscription: ${this.workerId}`);
+            }
+        }
+        if (this.subscription != null) {
+            this.log('Failed to cancel subscription after retries');
+            log.error(`Failed to cancel subscription after retries: ${this.workerId}`);
+            this.subscription = null;
         }
         this.status = STATUS_STOPPED;
+        this.log('Stopped');
         log.info(`Stopped: ${this.workerId}`);
-        this.subscription = null;
         this.streamingClient = null;
         this.connection = null;
         return this.storeReplayId(true);
