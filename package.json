@@ -4,7 +4,7 @@
   "description": "Salesforce Streaming Events To AWS SNS Bridge",
   "main": "index.js",
   "scripts": {
-    "start": "node app.js",
+    "start": "node -e 'new (require(\"./app\").App)().launch()'",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

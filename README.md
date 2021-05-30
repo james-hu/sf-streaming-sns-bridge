@@ -6,6 +6,10 @@ bridging Salesforce Streaming Events to AWS SNS topics.
 This application listens for Salesforce Streaming Events and forwards all
 messages to AWS SNS topics.
 
+It is also available as an NPM package so that you can just import `Bridge` and
+wrap it with your own UI if desired.
+See "How to use it in your code" section below for details.
+
 Main features are:
 
 * All [kinds of events](https://developer.salesforce.com/docs/atlas.en-us.api_streaming.meta/api_streaming/terms.htm)
@@ -173,6 +177,23 @@ After starting up, you can access the bridge's REST API endpoints to manage it:
 * `/health` - returns whether the bridge is `UP` or `DOWN`
 * `/status` - returns the detailed status of each channel-SNS pair
 * `/reload` - instruct the bridge to re-read configurations and then restart all channel-SNS pairs
+
+## How to use it in your code
+
+You can import `Bridge` from the NPM package
+[sf-streaming-sns-bridge](https://www.npmjs.com/package/sf-streaming-sns-bridge)
+and then use it like this:
+
+```javascript
+const bridge = new Bridge();    // Create an instance, at this time the bridege does nothing because it has not been configured yet
+await bridge.reload();          // Configurations will be read from environment variables, and the bridge would start up
+console.log(bridge.status());   // Status is an object
+await bridge.stopAll();         // Stop
+await bridge.startAll();        // Start again (without re-reading configurations)
+await bridge.reload();          // Re-read configurations and restart
+```
+
+Please note that `Bridge` does not expose any REST API. If you would like to expose REST API, consider importing and extending `App` class.
 
 ## For developers
 
