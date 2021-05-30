@@ -17,7 +17,7 @@ class App {
         this.bridge = new Bridge();
         
         // Exposing REST API
-        this.httpServer = http.createServer(function (req, res) {
+        this.httpServer = http.createServer((req, res) => {
             const bodyPromise = this.handleHttpRequest(req);
             bodyPromise.catch(e => {
                 let body;
