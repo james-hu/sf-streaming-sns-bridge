@@ -27,8 +27,8 @@
   },
   "homepage": "https://github.com/james-hu/sf-pe-sns-bridge#readme",
   "dependencies": {
-    "aws-sdk": "^2.783.0",
-    "jsforce": "^1.10.0",
+    "aws-sdk": "^2.918.0",
+    "jsforce": "^1.10.1",
     "lambda-log": "^2.4.0"
   }
 }
