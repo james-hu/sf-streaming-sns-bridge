@@ -1,7 +1,14 @@
 # Bridge for forwarding Salesforce Streaming Events to AWS SNS topics
 
-Node.js application (Docker and AWS ECS/EB ready) for
+Node.js application (Docker and AWS ECS/EB ready) and also NPM package for
 bridging Salesforce Streaming Events to AWS SNS topics.
+
+[![Version](https://img.shields.io/npm/v/sf-streaming-sns-bridge.svg)](https://npmjs.org/package/sf-streaming-sns-bridge)
+[![Downloads/week](https://img.shields.io/npm/dw/sf-streaming-sns-bridge.svg)](https://npmjs.org/package/sf-streaming-sns-bridge)
+[![License](https://img.shields.io/npm/l/sf-streaming-sns-bridge.svg)](https://github.com/james-hu/sf-streaming-sns-bridge/blob/master/package.json)
+[![Docker Pulls](https://img.shields.io/docker/pulls/jameshu/sf-streaming-sns-bridge.svg)](https://hub.docker.com/r/jameshu/sf-streaming-sns-bridge)
+[![Docker Image Size](https://img.shields.io/docker/image-size/jameshu/sf-streaming-sns-bridge.svg?sort=semver)](https://hub.docker.com/r/jameshu/sf-streaming-sns-bridge)
+
 
 This application listens for Salesforce Streaming Events and forwards all
 messages to AWS SNS topics.
