@@ -204,5 +204,6 @@ Please note that `Bridge` does not expose any REST API. If you would like to exp
 
 ## For developers
 
-* Run for test: refer to "How to run it"
+* Run it locally: refer to "How to run it"
+* Run test cases locally: `AWS_REGION=ap-southeast-2 BRIDGE_CONFIG_PARAMETER_STORE=<your parameter name> BRIDGE_CONFIG_REPLAY_ID_STORE_TABLE_NAME='' npx mocha`
 * Bump up version number: `npm version patch -m "..."`
