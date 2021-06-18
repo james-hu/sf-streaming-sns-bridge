@@ -54,7 +54,7 @@ class Bridge {
             ].forEach(([name, envName]) => {
                 const fullEnvName = 'BRIDGE_CONFIG_' + envName
                 const v = process.env[fullEnvName];
-                if (v) {
+                if (v != null) {
                     obj.options[name] = v;
                     log.info(`Configuration 'options.${name}' overridden by value read from environment variable '${fullEnvName}': ${v}`);
                 }
