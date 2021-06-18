@@ -1,6 +1,7 @@
 const log = require('lambda-log');
 const AWS = require('aws-sdk');
 const jsforce = require('jsforce');
+const { PromiseUtils } = require('@handy-common-utils/promise-utils');
 
 const STATUS_INITIALIZED = "Initialized";
 const STATUS_STARTING = "Starting";
@@ -200,29 +201,26 @@ class Worker {
         });
     }
 
-    stop() {
+    async stop() {
         log.info(`Stopping: ${this.workerId}`);
         this.status = STATUS_STOPPING;
-        for (let i = 0; i < 5 && this.subscription != null; i ++) {
-            this.log('Cancelling subscription');
-            log.info(`Cancelling subscription: ${this.workerId}`);
+        if (this.streamingClient != null) {
             try {
-                this.subscription.cancel();
-                this.log('Cancelled subscription');
-                this.subscription = null;
-            } catch (err) {
-                this.log('Failed to cancel subscription');
-                log.warn(`Failed to cancel subscription: ${this.workerId}`);
+                await PromiseUtils.withRetry(async () => {
+                    const p = this.streamingClient.disconnect();
+                    if (p == null) {
+                        throw new Error(`streamingClient.disconnect() didn't return an object`);
+                    }
+                }, [2000, 3000, 5000, 8000, 10000, 20000]);
+                this.status = STATUS_STOPPED;
+                this.log('Stopped');
+                log.info(`Stopped: ${this.workerId}`);
+            } catch (error) {
+                this.log(`Failed to stop: ${error}`);
+                log.error(error, {msg: `Failed to stop: ${this.workerId}`});
             }
         }
-        if (this.subscription != null) {
-            this.log('Failed to cancel subscription after retries');
-            log.error(`Failed to cancel subscription after retries: ${this.workerId}`);
-            this.subscription = null;
-        }
-        this.status = STATUS_STOPPED;
-        this.log('Stopped');
-        log.info(`Stopped: ${this.workerId}`);
+        
         this.streamingClient = null;
         this.connection = null;
         return this.storeReplayId(true);
