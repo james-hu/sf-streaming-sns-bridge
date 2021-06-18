@@ -178,12 +178,16 @@ class Worker {
             this.replayId = replayId;
             const replayExt = new jsforce.StreamingExtension.Replay(this.channelName, this.replayId);
             const authFailureExt = new jsforce.StreamingExtension.AuthFailure(() => {
-                this.log('Restart needed because of auth error (probably expired)')
-                setTimeout(this.restart.bind(this), 0);
+                if (this.status !== STATUS_STOPPING && this.status != STATUS_STOPPED) {
+                    const msg = 'Restart needed because of auth error (probably expired)';
+                    this.log(msg);
+                    log.debug(`${msg}: ${this.workerId}`);
+                    setTimeout(this.restart.bind(this), 0);
+                }
             });
             
             this.connection = new jsforce.Connection(this.sfConnOptions);
-            this.log('Logging in Salesforce')
+            this.log('Logging into Salesforce')
             return this.connection.login(this.sfConnOptions.username, this.sfConnOptions.password + this.sfConnOptions.token)
                     .then(userInfo => {
                         this.log(`Creating streaming client for '${this.channelName}' with initial replayId ${this.replayId}`);
